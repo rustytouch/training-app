@@ -4,10 +4,20 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>training-app</title>
+    <meta name="theme-color" content="#1a1a2e" />
+    <link rel="manifest" href="/training-app/manifest.json" />
+    <link rel="apple-touch-icon" href="/training-app/icon-192.png" />
+    <title>Training App</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/training-app/sw.js')
+        })
+      }
+    </script>
   </body>
 </html>
