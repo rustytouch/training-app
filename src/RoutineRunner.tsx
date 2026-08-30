@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import type { Routine, QueueItem } from './types'
+import type { Routine, QueueItem, SessionRecord, LogEntry } from './types'
 import { flattenRoutine } from './flattenRoutine'
+import { saveSession } from './db'
 
 interface Props {
   routine: Routine
   onExit: () => void
 }
 
-type Screen = 'work' | 'rest' | 'complete'
+type Screen = 'work' | 'rest' | 'complete' | 'confirmExit'
 
 function playTone() {
   try {
@@ -36,6 +37,13 @@ function formatSide(side: 'none' | 'left' | 'right'): string {
   return ''
 }
 
+function formatElapsedTime(ms: number): string {
+  const totalSeconds = Math.floor(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
+
 export function RoutineRunner({ routine, onExit }: Props) {
   const [queue] = useState<QueueItem[]>(() => flattenRoutine(routine))
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -46,6 +54,11 @@ export function RoutineRunner({ routine, onExit }: Props) {
   })
   const [timerRunning, setTimerRunning] = useState(false)
   const [restCountdown, setRestCountdown] = useState(0)
+  const [startedAt] = useState(() => new Date().toISOString())
+  const [completedAt, setCompletedAt] = useState<string | null>(null)
+  const [note, setNote] = useState('')
+  const [entries] = useState<LogEntry[]>([])
+  const [saving, setSaving] = useState(false)
   const wakeLockRef = useRef<WakeLockSentinel | null>(null)
 
   const current = queue[currentIndex]
@@ -62,6 +75,7 @@ export function RoutineRunner({ routine, onExit }: Props) {
   function advanceFromWork() {
     const { currentIndex: idx, queue: q, isLastItem: isLast, current: cur } = stateRef.current
     if (isLast) {
+      setCompletedAt(new Date().toISOString())
       setScreen('complete')
       return
     }
@@ -195,14 +209,96 @@ export function RoutineRunner({ routine, onExit }: Props) {
     advanceFromRest()
   }
 
+  function handleFinishEarly() {
+    setScreen('confirmExit')
+  }
+
+  function handleConfirmFinishEarly() {
+    setCompletedAt(new Date().toISOString())
+    setScreen('complete')
+  }
+
+  function handleCancelFinishEarly() {
+    setScreen('work')
+  }
+
+  async function handleSaveSession(completed: 'full' | 'early') {
+    setSaving(true)
+    const session: SessionRecord = {
+      sessionId: startedAt,
+      routineId: routine.id,
+      routineVersion: routine.version,
+      variantId: null,
+      startedAt,
+      completedAt: completedAt ?? new Date().toISOString(),
+      completed,
+      stepsCompleted: currentIndex + 1,
+      stepsTotal: queue.length,
+      entries,
+      note: note.trim(),
+    }
+    await saveSession(session)
+    setSaving(false)
+    onExit()
+  }
+
+  const elapsedMs = completedAt
+    ? new Date(completedAt).getTime() - new Date(startedAt).getTime()
+    : 0
+
+  // Confirm exit screen
+  if (screen === 'confirmExit') {
+    return (
+      <div className="runner-screen confirm-screen">
+        <div className="content">
+          <h1>Finish early?</h1>
+          <p className="confirm-text">
+            You've completed {currentIndex + 1} of {queue.length} steps.
+          </p>
+        </div>
+        <div className="button-row">
+          <button
+            type="button"
+            className="action-button secondary"
+            onClick={handleCancelFinishEarly}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="action-button"
+            onClick={handleConfirmFinishEarly}
+          >
+            Finish
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // Complete screen
   if (screen === 'complete') {
+    const isEarly = currentIndex < queue.length - 1
     return (
       <div className="runner-screen complete-screen">
         <h1>Done</h1>
         <p className="routine-name">{routine.name}</p>
-        <button type="button" className="action-button" onClick={onExit}>
-          Back to routines
+        <p className="elapsed-time">{formatElapsedTime(elapsedMs)}</p>
+        <input
+          type="text"
+          className="note-input"
+          placeholder="Add a note (optional)"
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          maxLength={200}
+        />
+        <button
+          type="button"
+          className="action-button"
+          onClick={() => handleSaveSession(isEarly ? 'early' : 'full')}
+          disabled={saving}
+        >
+          {saving ? 'Saving...' : 'Done'}
         </button>
       </div>
     )
@@ -213,8 +309,8 @@ export function RoutineRunner({ routine, onExit }: Props) {
     return (
       <div className="runner-screen rest-screen">
         <header className="runner-header">
-          <button type="button" className="exit-button" onClick={onExit}>
-            Exit
+          <button type="button" className="exit-button" onClick={handleFinishEarly}>
+            Finish early
           </button>
           <h2 className="routine-title">{routine.name}</h2>
         </header>
@@ -242,8 +338,8 @@ export function RoutineRunner({ routine, onExit }: Props) {
   return (
     <div className="runner-screen work-screen">
       <header className="runner-header">
-        <button type="button" className="exit-button" onClick={onExit}>
-          Exit
+        <button type="button" className="exit-button" onClick={handleFinishEarly}>
+          Finish early
         </button>
         <h2 className="routine-title">{routine.name}</h2>
       </header>

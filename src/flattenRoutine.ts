@@ -17,6 +17,7 @@ function flattenStep(step: Step): QueueItem[] {
         work: step.work,
         restSeconds: step.restSeconds,
         isLastSetOfStep: i === step.sets,
+        log: step.log,
       })
     }
   } else if (step.sides === 'leftRight') {
@@ -39,6 +40,7 @@ function flattenStep(step: Step): QueueItem[] {
         work: step.work,
         restSeconds: step.restSeconds,
         isLastSetOfStep: false,
+        log: step.log,
       })
     }
 
@@ -54,6 +56,7 @@ function flattenStep(step: Step): QueueItem[] {
         work: step.work,
         restSeconds: step.restSeconds,
         isLastSetOfStep: false,
+        log: step.log,
       })
     }
 

@@ -1,20 +1,20 @@
 import type { Routine } from './types'
 
-const routineModules = import.meta.glob<{ default: Routine }>(
-  '../routines/*.json',
-  { eager: true }
-)
-
-const routines: Routine[] = Object.values(routineModules).map((m) => m.default)
-
 interface Props {
+  routines: Routine[]
   onSelect: (routine: Routine) => void
+  onOpenHistory: () => void
 }
 
-export function RoutineList({ onSelect }: Props) {
+export function RoutineList({ routines, onSelect, onOpenHistory }: Props) {
   return (
     <div className="routine-list-screen">
-      <h1>Routines</h1>
+      <header className="list-header">
+        <h1>Routines</h1>
+        <button type="button" className="history-link" onClick={onOpenHistory}>
+          History
+        </button>
+      </header>
       <ul className="routine-list">
         {routines.map((routine) => (
           <li key={routine.id}>

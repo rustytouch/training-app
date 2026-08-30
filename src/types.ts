@@ -55,4 +55,26 @@ export interface QueueItem {
   work: Work
   restSeconds: number
   isLastSetOfStep: boolean
+  log: string[]
+}
+
+export interface LogEntry {
+  stepId: string
+  side: Side
+  setNumber: number
+  values: Record<string, string | number>
+}
+
+export interface SessionRecord {
+  sessionId: string
+  routineId: string
+  routineVersion: number
+  variantId: string | null
+  startedAt: string
+  completedAt: string
+  completed: 'full' | 'early'
+  stepsCompleted: number
+  stepsTotal: number
+  entries: LogEntry[]
+  note: string
 }
