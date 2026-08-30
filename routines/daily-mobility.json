@@ -1,0 +1,89 @@
+{
+  "id": "daily-mobility",
+  "version": 1,
+  "name": "Daily mobility routine",
+  "type": "mobility",
+  "equipment": ["yoga mat"],
+  "estimatedMinutes": 10,
+  "notes": "Barefoot, before breakfast. Change nothing for the first two weeks.",
+  "steps": [
+    {
+      "id": "breathing",
+      "name": "Crook-lying breathing with posterior tilt",
+      "cue": "Knees bent, feet flat. Exhale fully, let the ribs drop and the lower back flatten towards the mat. Hold empty for 2 seconds, then inhale without losing it.",
+      "sides": "none",
+      "sets": 1,
+      "work": { "mode": "reps", "reps": 6, "label": "slow breaths" },
+      "restSeconds": 0,
+      "log": []
+    },
+    {
+      "id": "cat-cow",
+      "name": "Cat-cow",
+      "cue": "Move one segment at a time rather than hinging at one spot.",
+      "sides": "none",
+      "sets": 1,
+      "work": { "mode": "reps", "reps": 8 },
+      "restSeconds": 0,
+      "log": []
+    },
+    {
+      "id": "hip-switches",
+      "name": "90/90 hip switches",
+      "cue": "Both knees at 90 degrees, one leg front, one to the side. Rotate the knees across without using your hands. Pause 1 second at each end.",
+      "sides": "alternating",
+      "sets": 1,
+      "work": { "mode": "reps", "reps": 8, "label": "switches per side" },
+      "restSeconds": 0,
+      "log": []
+    },
+    {
+      "id": "adductor-lift",
+      "name": "Side-lying adductor lift",
+      "cue": "Top leg bent, foot planted in front. Lift the bottom leg towards the ceiling, squeeze at the top, lower over 3 seconds.",
+      "sides": "leftRight",
+      "sets": 1,
+      "extraSets": { "right": 1 },
+      "work": { "mode": "reps", "reps": 6, "tempo": "1-3-3" },
+      "restSeconds": 0,
+      "log": []
+    },
+    {
+      "id": "hip-extension",
+      "name": "Half-kneeling hip extension",
+      "cue": "Ribs down, squeeze the back glute. Do not let the lower back arch to create the range.",
+      "sides": "leftRight",
+      "sets": 1,
+      "work": { "mode": "time", "seconds": 30 },
+      "restSeconds": 0,
+      "log": []
+    },
+    {
+      "id": "deep-squat",
+      "name": "Deep squat hold",
+      "cue": "Heels down if you can, elbows inside the knees, press the knees out gently. Stand up between rounds.",
+      "sides": "none",
+      "sets": 3,
+      "work": { "mode": "time", "seconds": 30 },
+      "restSeconds": 15,
+      "log": []
+    }
+  ],
+  "variants": [
+    {
+      "id": "short",
+      "name": "Short on time",
+      "includeSteps": ["breathing", "hip-switches", "deep-squat"]
+    },
+    {
+      "id": "stiff",
+      "name": "Stiff or tired",
+      "overrides": {
+        "adductor-lift": {
+          "extraSets": {},
+          "work": { "mode": "reps", "reps": 4, "tempo": "1-3-3" }
+        }
+      }
+    }
+  ]
+}
